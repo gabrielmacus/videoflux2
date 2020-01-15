@@ -2,6 +2,7 @@
 //import isOnline  from 'is-online';
 //window.isOnline =  await isOnline();
 window.isOnline = navigator.onLine;
+alert("DEMO UPDATE");
 
 import Vue from 'vue'
 import axios from 'axios'
