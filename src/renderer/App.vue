@@ -18,7 +18,7 @@
     ipcRenderer.once('update_downloaded', () => {
       alert("Actualización descargada. Reinicie la aplicación");
     });
-    alert("Verificando actualizaciones...");
+    //alert("Verificando actualizaciones...");
     ipcRenderer.send("check_updates");
 
     }
