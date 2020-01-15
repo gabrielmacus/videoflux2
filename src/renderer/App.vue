@@ -6,10 +6,21 @@
 
 <script>
   import store from './store/index.js';
-
+  import { ipcRenderer } from 'electron'
 
   export default {
-    name: 'videoflux2'
+    name: 'videoflux2',
+    mounted(){
+    ipcRenderer.once('update_available', () => {
+      alert("Actualización disponible. Descargando...");
+
+    });
+    ipcRenderer.once('update_downloaded', () => {
+      alert("Actualización descargada. Reinicie la aplicación");
+    });
+    ipcRenderer.send("check_updates");
+
+    }
   }
 </script>
 

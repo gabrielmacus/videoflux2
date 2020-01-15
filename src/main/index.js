@@ -8,6 +8,7 @@ const fetch = require('node-fetch');
 const Multipart = require('multi-part');
 const http = require('http');
 const isOnline = require('is-online');
+const { autoUpdater } = require('electron-updater');
 
 /**
  * Set `__static` path to static files in production
@@ -42,6 +43,7 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
 
 
 }
@@ -167,6 +169,20 @@ ipcMain.on('loadFolder', async (event,pathToLoad) => {
 });
 
 
+ipcMain.on('check_updates',(event)=>{
+
+  //Update manager
+  autoUpdater.checkForUpdatesAndNotify();
+
+
+  autoUpdater.on('update-available', () => {
+     event.sender.send('update_available');
+  });
+  autoUpdater.on('update-downloaded', () => {
+     event.sender.send('update_downloaded');
+  });
+
+});
 
 /**
  * Auto Updater
@@ -177,6 +193,7 @@ ipcMain.on('loadFolder', async (event,pathToLoad) => {
  */
 
 
+/*
 import { autoUpdater } from 'electron-updater'
 
 autoUpdater.on('update-downloaded', () => {
@@ -187,3 +204,4 @@ app.on('ready', () => {
   if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 })
 
+*/
