@@ -1,6 +1,6 @@
 {
   "name": "videoflux2",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "author": "Gabriel Macus <gabrielmacus@gmail.com>",
   "description": "Software de renombrado para secuencia de imágenes",
   "license": null,
@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://181.29.190.165:8080/videoflux2.git"
+    "url": "https://github.com/gabrielmacus/videoflux2.git"
   },
   "build": {
     "productName": "Videoflux 2",
