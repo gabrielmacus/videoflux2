@@ -1,4 +1,4 @@
-alert("HELLO!")
+
 //import isOnline  from 'is-online';
 //window.isOnline =  await isOnline();
 window.isOnline = navigator.onLine;

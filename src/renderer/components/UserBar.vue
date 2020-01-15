@@ -51,8 +51,8 @@ align-items: center;
 .user-bar
 {
 
-  background: #303f9f;
-color: white;
+  background: $secondary-color;
+color: $secondary-contrast;
 display: flex;
 align-items: center;
 padding: 0.75rem;
