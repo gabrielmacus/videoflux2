@@ -88,7 +88,7 @@
           this.$router.push("/");
 
         } catch (e) {
-
+            console.log(e);
           alert(e.response.data);
         } finally {
 

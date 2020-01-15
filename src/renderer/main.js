@@ -3,6 +3,7 @@
 //window.isOnline =  await isOnline();
 window.isOnline = navigator.onLine;
 
+
 import Vue from 'vue'
 import axios from 'axios'
 

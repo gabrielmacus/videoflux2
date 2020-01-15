@@ -27,7 +27,7 @@ import Vue from 'vue';
 
     let self = this;
     self.$toast.open({
-              message: `Revisando actualizaciones...`,
+              message: `Verificando actualizaciones...`,
               type: 'info',
           });
 

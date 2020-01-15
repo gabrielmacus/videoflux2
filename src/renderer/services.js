@@ -2,8 +2,14 @@ import axios from 'axios';
 import store from './store';
 
 
-let baseUrl = "http://localhost:1337/";//"http://192.168.0.50:1337/";
-let apiUrl = "http://181.29.190.165:1337/";
+import DEV_ENV from '../dev.env';
+import PROD_ENV from '../prod.env';
+window.ENV = DEV_ENV;
+if (process.env.NODE_ENV === 'production') {
+
+  Object.assign(window.ENV, PROD_ENV);
+}
+
 
 
 
@@ -45,7 +51,7 @@ export default {
                 try
                 {
                     let response = await  axios({
-                        url:`${apiUrl}user/refresh-token`,
+                        url:`${ENV.apiUrl}/user/refresh-token`,
                         method:"GET",
                         headers: {'Authorization':`Bearer ${token}`}
                     });
@@ -70,7 +76,9 @@ export default {
         },
         async login(account)
         {
-          let response  = await axios.post(`${apiUrl}user/login`,account);
+            console.log(`${ENV.apiUrl}/user/login`);
+          let response  = await axios.post(`${ENV.apiUrl}/user/login`,account);
+
           window.localStorage.setItem("token",response.data.token);
 
           return response.data;
@@ -85,14 +93,14 @@ export default {
                 query = "";
             }
             let token = window.localStorage.getItem("token");
-            let response = await axios.get(`${apiUrl}${resource}/?${query}`,{headers: {'Authorization':`Bearer ${token}`}});
+            let response = await axios.get(`${ENV.apiUrl}/${resource}/?${query}`,{headers: {'Authorization':`Bearer ${token}`}});
 
             return response.data;
         },
         async show(resource,id)
         {
             let token = window.localStorage.getItem("token");
-            let response = await axios.get(`${apiUrl}${resource}/${id}`,{headers: {'Authorization':`Bearer ${token}`}});
+            let response = await axios.get(`${ENV.apiUrl}/${resource}/${id}`,{headers: {'Authorization':`Bearer ${token}`}});
 
             return response.data;
         },
@@ -106,7 +114,7 @@ export default {
     '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
 
             let token = window.localStorage.getItem("token");
-            let url = pattern.test(path) ? path : `${apiUrl}${path}`;
+            let url = pattern.test(path) ? path : `${ENV.apiUrl}/${path}`;
             if(headers)
             {
                 headers["Authorization"]  = `Bearer ${token}`;
@@ -126,14 +134,14 @@ export default {
         async delete(resource,id)
         {
             let token = window.localStorage.getItem("token");
-            let response = await axios.delete(`${apiUrl}${resource}/${id}`,{headers: {'Authorization':`Bearer ${token}`}});
+            let response = await axios.delete(`${ENV.apiUrl}/${resource}/${id}`,{headers: {'Authorization':`Bearer ${token}`}});
 
             return response.data;
         },
         async save(data,resource,headers,id)
         {
             let token = window.localStorage.getItem("token");
-            let url = id?`${apiUrl}${resource}/${id}` : `${apiUrl}${resource}/`;
+            let url = id?`${ENV.apiUrl}/${resource}/${id}` : `${ENV.apiUrl}/${resource}/`;
             let method = id?"PATCH":"POST";
             if(headers)
             {

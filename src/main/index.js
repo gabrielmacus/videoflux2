@@ -10,6 +10,17 @@ const http = require('http');
 const isOnline = require('is-online');
 const { autoUpdater } = require('electron-updater');
 
+
+import DEV_ENV from '../dev.env';
+import PROD_ENV from '../prod.env';
+global.ENV = DEV_ENV;
+
+if (process.env.NODE_ENV === 'production') {
+
+  Object.assign(global.ENV, PROD_ENV);
+}
+
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -62,7 +73,7 @@ app.on('activate', () => {
   }
 })
 
-let apiUrl = "http://181.29.190.165:1337"
+let apiUrl = global.ENV.apiUrl
 
 ipcMain.on('saveInfraction',async (event,data)=>{
 

@@ -330,7 +330,7 @@
       saveInfraction(){
         let self = this;
 
-        if(!self.infraction.plate.match(/(^\w{3}\d{3}$)|(^\w{2}\d{3}\w{2}$)/) && !confirm("La patente tiene un formato desconocido. ¿Guardar de todas formas?"))
+        if(!self.infraction.unreadablePlate && !self.infraction.plate.match(/(^\w{3}\d{3}$)|(^\w{2}\d{3}\w{2}$)/) && !confirm("La patente tiene un formato desconocido. ¿Guardar de todas formas?"))
          {
            return ;
          }
