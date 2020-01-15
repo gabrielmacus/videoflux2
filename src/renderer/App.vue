@@ -31,11 +31,13 @@ import Vue from 'vue';
               type: 'info',
           });
 
-    ipcRenderer.once('update_available', () => {
+    ipcRenderer.on('update_available', () => {
+      ipcRenderer.removeAllListeners('update_available');
       self.updateMessage = "Actualización disponible. Descargando...";
 
     });
-    ipcRenderer.once('update_downloaded', () => {
+    ipcRenderer.on('update_downloaded', () => {
+       ipcRenderer.removeAllListeners('update_downloaded');
        self.updateMessage = "Actualización descargada. Se reiniciara la aplicación";
        ipcRenderer.send('restart_app');
 

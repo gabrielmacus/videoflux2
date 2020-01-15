@@ -8,7 +8,7 @@ const fetch = require('node-fetch');
 const Multipart = require('multi-part');
 const http = require('http');
 const isOnline = require('is-online');
-const { autoUpdater } = require('electron-updater');
+
 
 
 import DEV_ENV from '../dev.env';
@@ -180,10 +180,12 @@ ipcMain.on('loadFolder', async (event,pathToLoad) => {
 });
 
 
+import { autoUpdater } from 'electron-updater'
+
 ipcMain.on('check_updates',(event)=>{
 
   //Update manager
-  autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.checkForUpdates();
 
 
   autoUpdater.on('update-available', () => {
