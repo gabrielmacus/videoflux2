@@ -33,7 +33,7 @@ import Vue from 'vue';
 
     ipcRenderer.on('update_available', () => {
       ipcRenderer.removeAllListeners('update_available');
-      self.updateMessage = "Actualización disponible. Descargando...";
+      self.updateMessage = "Actualización encontrada. Descargando...";
 
     });
     ipcRenderer.on('update_downloaded', () => {
