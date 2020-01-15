@@ -6,7 +6,7 @@
 
     <div slot="header" class="header">
       <div class="breadcrumb" v-if="breadcrumb.length > 0">
-        <span @click="loadFolder(folder)" v-for="folder in breadcrumb">{{folder.name}} <span class="separator">></span></span>
+        <span @click="loadFolder(folder)" v-for="folder in breadcrumb"><span class="folder-name">{{folder.name}}</span> <span class="separator">></span></span>
       </div>
 
     </div>
@@ -100,7 +100,16 @@
     display: flex;
 
     span{
+
+      cursor:pointer;
+
       padding: 0.5rem;
+
+      .folder-name:hover
+      {
+      text-decoration:underline;
+      }
+
       .separator{
         padding: 0;
         padding-left: 0.5rem;

@@ -19,6 +19,12 @@
 }
 button
 {
+  transition:all 0.2s;
+  &:hover
+  {
+    background:$primary-color-accent;
+    color:$primary-accent-contrast;
+  }
   &.loading
   {
     pointer-events: none;
