@@ -1,24 +1,47 @@
 <template>
   <div id="app">
     <router-view></router-view>
+    <FullscreenMessage :message="updateMessage"></FullscreenMessage>
   </div>
 </template>
 
 <script>
+import Vue from 'vue';
+  import VueToast from 'vue-toast-notification';
+  import 'vue-toast-notification/dist/index.css';
+  Vue.use(VueToast);
+
   import store from './store/index.js';
+  import FullscreenMessage from './components/FullscreenMessage.vue';
   import { ipcRenderer } from 'electron'
 
   export default {
     name: 'videoflux2',
+    components:{FullscreenMessage},
+    data(){
+        return {
+            updateMessage:""
+        }
+    },
     mounted(){
+
+    let self = this;
+    self.$toast.open({
+              message: `Revisando actualizaciones...`,
+              type: 'info',
+          });
+
     ipcRenderer.once('update_available', () => {
-      alert("Actualización disponible. Descargando...");
+      self.updateMessage = "Actualización disponible. Descargando...";
 
     });
     ipcRenderer.once('update_downloaded', () => {
-      alert("Actualización descargada. Reinicie la aplicación");
+       self.updateMessage = "Actualización descargada. Se reiniciara la aplicación";
+       ipcRenderer.send('restart_app');
+
+
     });
-    alert("Verificando actualizaciones...");
+
     ipcRenderer.send("check_updates");
 
     }

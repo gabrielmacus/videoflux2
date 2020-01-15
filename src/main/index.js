@@ -184,6 +184,10 @@ ipcMain.on('check_updates',(event)=>{
 
 });
 
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
+});
+
 /**
  * Auto Updater
  *
