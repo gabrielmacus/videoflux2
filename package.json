@@ -1,15 +1,16 @@
 {
   "name": "videoflux2",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Gabriel Macus <gabrielmacus@gmail.com>",
   "description": "Software de renombrado para secuencia de imágenes",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
-    "build": "node .electron-vue/build.js && electron-builder --win --publish never",
-    "deploy": "node .electron-vue/build.js && electron-builder --win --publish always",
-    "old.build": "electron-builder build --win --publish never",
-    "build:dir": "node .electron-vue/build.js && electron-builder --dir --win --publish never",
+    "build": "node .electron-vue/build.js && electron-builder --platform win --arch all  --publish never",
+    "deploy": "node .electron-vue/build.js && electron-builder --platform win --arch all  --publish always",
+    "old.build": "electron-builder build  --platform win --arch all  --publish never",
+    "build:dir": "node .electron-vue/build.js && electron-builder --dir --platform win --arch all   --publish never",
+
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
     "dev": "node .electron-vue/dev-runner.js",
@@ -18,6 +19,7 @@
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
     "test": "npm run unit && npm run e2e",
+    "start-prod": "cross-env NODE_ENV=production electron ./app/main.prod.js",
     "unit": "karma start test/unit/karma.conf.js",
     "postinstall": ""
   },

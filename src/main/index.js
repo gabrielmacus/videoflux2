@@ -107,11 +107,14 @@ ipcMain.on('saveInfraction',async (event,data)=>{
       }
 
       const form = new Multipart();
-      form.append('time',infraction.time);
+
       form.append('plate',infraction.plate);
+
+      form.append('time',infraction.time);
       form.append('day',day);
       form.append('month',month);
       form.append('year',year);
+
       form.append('equipment',equipmentNumber);
       form.append('capture_1',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`})
       form.append('capture_2',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`})
