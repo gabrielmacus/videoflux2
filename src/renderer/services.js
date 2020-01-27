@@ -40,7 +40,8 @@ export default {
     },
     "API":{
         async logout()
-        {
+        { 
+          if(socket.isConnected())
           socket.disconnect();
           window.localStorage.removeItem("token");
           router.push("/login");
@@ -53,18 +54,8 @@ export default {
 
                 try
                 {
-                    if(!window.io){
-                      window.io = sailsIOClient(socketIOClient);
-                      io.sails.autoConnect = false;
-                      io.sails.url = ENV.apiUrl;
-                      io.sails.reconnection = true;
-                    }
-                    io.sails.headers = { 'Authorization':`Bearer ${window.localStorage.getItem("token")}` };
-                    window.socket = io.sails.connect(ENV.apiUrl);
-                    // window.socket.broadcast('demo',{message:'aa'});
-                    window.socket.on('connect',()=>{
-                      window.socket.get(`${ENV.apiUrl}/user/connected`)
-                    });
+
+
                     let response = await  axios({
                         url:`${ENV.apiUrl}/user/refresh-token`,
                         method:"GET",
@@ -73,6 +64,22 @@ export default {
 
                     window.localStorage.setItem("token",response.data.token);
                     store.dispatch("User/setData",response.data.user);
+
+                    //Socket connection
+                    if(!window.io){
+                      window.io = sailsIOClient(socketIOClient);
+                      window.io.sails.autoConnect = false;
+                      window.io.sails.url = ENV.apiUrl;
+                      window.io.sails.reconnection = true;
+                    }
+                    window.io.sails.headers = { 'Authorization':`Bearer ${window.localStorage.getItem("token")}` };
+
+                    window.socket = window.io.sails.connect(ENV.apiUrl);
+                    window.socket.on('connect',()=>{
+                      window.socket.post(`${ENV.apiUrl}/user/connected`)
+                    });
+
+                    //
                     //user.update(value => response.data.user);
 
                     authenticated = true
