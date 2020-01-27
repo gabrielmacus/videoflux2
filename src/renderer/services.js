@@ -1,6 +1,7 @@
 import axios from 'axios';
 import store from './store';
-
+import socketIOClient  from 'socket.io-client';
+import sailsIOClient from 'sails.io.js';
 
 import DEV_ENV from '../dev.env';
 import PROD_ENV from '../prod.env';
@@ -40,6 +41,7 @@ export default {
     "API":{
         async logout()
         {
+          socket.disconnect();
           window.localStorage.removeItem("token");
           router.push("/login");
         },
@@ -48,8 +50,21 @@ export default {
             let authenticated = false;
             if(token)
             {
+
                 try
                 {
+                    if(!window.io){
+                      window.io = sailsIOClient(socketIOClient);
+                      io.sails.autoConnect = false;
+                      io.sails.url = ENV.apiUrl;
+                      io.sails.reconnection = true;
+                    }
+                    io.sails.headers = { 'Authorization':`Bearer ${window.localStorage.getItem("token")}` };
+                    window.socket = io.sails.connect(ENV.apiUrl);
+                    // window.socket.broadcast('demo',{message:'aa'});
+                    window.socket.on('connect',()=>{
+                      window.socket.get(`${ENV.apiUrl}/user/connected`)
+                    });
                     let response = await  axios({
                         url:`${ENV.apiUrl}/user/refresh-token`,
                         method:"GET",
@@ -63,6 +78,7 @@ export default {
                     authenticated = true
                 }
                 catch (e) {
+                  console.log(e)
                 }
             }
 
@@ -76,8 +92,9 @@ export default {
         },
         async login(account)
         {
-            console.log(`${ENV.apiUrl}/user/login`);
+
           let response  = await axios.post(`${ENV.apiUrl}/user/login`,account);
+
 
           window.localStorage.setItem("token",response.data.token);
 

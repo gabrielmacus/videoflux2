@@ -1,6 +1,6 @@
 {
   "name": "videoflux2",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Gabriel Macus <gabrielmacus@gmail.com>",
   "description": "Software de renombrado para secuencia de imágenes",
   "license": null,
@@ -10,7 +10,6 @@
     "deploy": "node .electron-vue/build.js && electron-builder --platform win --arch all  --publish always",
     "old.build": "electron-builder build  --platform win --arch all  --publish never",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir --platform win --arch all   --publish never",
-
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
     "dev": "node .electron-vue/dev-runner.js",
@@ -72,6 +71,8 @@
     "node-fetch": "^2.6.0",
     "request": "^2.88.0",
     "rx-js": "0.0.0",
+    "sails.io.js": "^1.2.1",
+    "socket.io-client": "^2.3.0",
     "vue": "^2.5.16",
     "vue-cropper": "^0.4.9",
     "vue-cropperjs": "^4.0.1",
