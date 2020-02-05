@@ -7,7 +7,7 @@
     <!--
     <span class="image-counter">{{imageIndex + 1}}/{{images.length}}</span>
   -->
-  
+
     <div class="image-viewer">
       <div v-if="images.length > 0" class="image" :class="{active:(index == 0)}" v-for="(image, index) of images.slice(imageIndex,imageIndex + 15)">
         <img :style="`filter: saturate(${saturation}) brightness(${brightness});`" :data-viewer-image="index" :src="image.path"  >
@@ -18,6 +18,12 @@
         <p>No hay imágenes para mostrar</p>
       </div>
 
+      <div class="speed-control">
+        <span @click="setImageSkip(0)" :class="{active:imageSkip == 0}">x1</span>
+        <span @click="setImageSkip(1)" :class="{active:imageSkip == 1}">x2</span>
+        <span @click="setImageSkip(2)" :class="{active:imageSkip == 2}">x3</span>
+        <span @click="setImageSkip(3)" :class="{active:imageSkip == 3}">x4</span>
+      </div>
     </div>
     <!---
     <div  v-if="images.length > 0" class="image-filters">
@@ -50,7 +56,8 @@
     data(){
       return {
         saturation:1,
-        brightness:1
+        brightness:1,
+        imageSkip:0,
       }
     },
     components: { VueRangeSlider, GlobalEvents },
@@ -73,7 +80,9 @@
       }
     },
     methods: {
-
+      setImageSkip(i){
+        this.imageSkip = i;
+      },
       async onKeyPress(e){
         await Vue.nextTick();
         let self = this;
@@ -86,7 +95,7 @@
             }
             imageTimeout = setTimeout(function () {
               //self.imageIndex = self.imageIndex + 1;
-              self.$emit("update:imageIndex",self.imageIndex + 1);
+              self.$emit("update:imageIndex",self.imageIndex + 1 + self.imageSkip);
               clearTimeout(imageTimeout);
               imageTimeout = null;
             }, 35);
@@ -98,7 +107,7 @@
             }
             imageTimeout = setTimeout(function () {
               //self.imageIndex = self.imageIndex - 1;
-              self.$emit("update:imageIndex",self.imageIndex - 1);
+              self.$emit("update:imageIndex",self.imageIndex - 1 - self.imageSkip);
               clearTimeout(imageTimeout);
               imageTimeout = null;
             }, 35);
@@ -110,6 +119,12 @@
             self.$emit('imageCaptured',{path:self.images[self.imageIndex].path,image:self.imageIndex + 1,captureNumber:e.code.replace("F","")});
             break;
           default:
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+            self.setImageSkip(parseInt(e.key)-1);
+          break;
 
         }
       }
@@ -118,6 +133,24 @@
 </script>
 
 <style lang="scss" scoped>
+.speed-control{
+  span{
+    display: block;
+    cursor:pointer;
+    padding: 0.5rem
+
+  }
+  span.active
+  {color:black;background: white;}
+      display: flex;
+    position: absolute;
+    bottom: -1rem;
+    z-index: 1;
+    color:white;
+    background: black;
+    left: 1REM;
+    transform: translateY(100%);
+}
 .counter
 {
   position: absolute;
