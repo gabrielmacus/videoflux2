@@ -118,8 +118,7 @@
           case 'F2':
           case 'F3':
             self.$emit('imageCaptured',{path:self.images[self.imageIndex].path,image:self.imageIndex + 1,captureNumber:e.code.replace("F","")});
-            break;
-          default:
+            break; 
           case '1':
           case '2':
           case '3':
