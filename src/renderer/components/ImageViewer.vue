@@ -17,14 +17,15 @@
       <div v-if="images.length == 0" class="no-images" >
         <p>No hay imágenes para mostrar</p>
       </div>
+
       <!--
       <div class="speed-control">
         <span @click="setImageSkip(0)" :class="{active:imageSkip == 0}">x1</span>
         <span @click="setImageSkip(1)" :class="{active:imageSkip == 1}">x2</span>
         <span @click="setImageSkip(2)" :class="{active:imageSkip == 2}">x3</span>
         <span @click="setImageSkip(3)" :class="{active:imageSkip == 3}">x4</span>
-      </div>
-    -->
+      </div>-->
+
     </div>
     <!---
     <div  v-if="images.length > 0" class="image-filters">
@@ -118,7 +119,7 @@
           case 'F2':
           case 'F3':
             self.$emit('imageCaptured',{path:self.images[self.imageIndex].path,image:self.imageIndex + 1,captureNumber:e.code.replace("F","")});
-            break; 
+            break;
           case '1':
           case '2':
           case '3':
