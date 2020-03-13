@@ -135,7 +135,6 @@ ipcMain.on('saveInfraction',async (event,data)=>{
     }
     catch(e)
     {
-      console.log(e);
       event.sender.send('infractionSaved',{error:e,infraction:data.infraction});
     }
 
