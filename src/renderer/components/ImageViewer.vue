@@ -9,8 +9,8 @@
   -->
 
     <div class="image-viewer">
-      <div v-if="images.length > 0" class="image" :class="{active:(index == 0)}" v-for="(image, index) of images.slice(imageIndex,imageIndex + 15)">
-        <img :style="`filter: saturate(${saturation}) brightness(${brightness});`" :data-viewer-image="index" :src="image.path"  >
+      <div v-if="index % (imageSkip + 1) == 0 || imageIndex == images.length"  class="image" :class="{active:(index == 0)}" v-for="(image, index) of images.slice(imageIndex,imageIndex + (imagesPreloaded * (imageSkip + 1)))">
+        <img  :style="`filter: saturate(${saturation}) brightness(${brightness});`" :data-viewer-image="index" :src="image.path"  >
         <span class="counter">{{imageIndex + 1}} / {{images.length}}</span>
       </div>
 
@@ -18,14 +18,12 @@
         <p>No hay imágenes para mostrar</p>
       </div>
 
-      <!--
       <div class="speed-control">
         <span @click="setImageSkip(0)" :class="{active:imageSkip == 0}">x1</span>
         <span @click="setImageSkip(1)" :class="{active:imageSkip == 1}">x2</span>
         <span @click="setImageSkip(2)" :class="{active:imageSkip == 2}">x3</span>
         <span @click="setImageSkip(3)" :class="{active:imageSkip == 3}">x4</span>
-      </div>-->
-
+      </div>
     </div>
     <!---
     <div  v-if="images.length > 0" class="image-filters">
@@ -57,6 +55,7 @@
     props: ['images','imageIndex'],
     data(){
       return {
+        imagesPreloaded:15,
         saturation:1,
         brightness:1,
         imageSkip:0,
@@ -97,7 +96,14 @@
             }
             imageTimeout = setTimeout(function () {
               //self.imageIndex = self.imageIndex + 1;
-              self.$emit("update:imageIndex",self.imageIndex + 1 + self.imageSkip);
+              let newIndex =self.imageIndex + 1 + self.imageSkip;
+              if(newIndex > self.images.length - 1)
+              {
+                newIndex = self.images.length - 1;
+              }
+
+              self.$emit("update:imageIndex",newIndex);
+
               clearTimeout(imageTimeout);
               imageTimeout = null;
             }, 35);
@@ -109,7 +115,12 @@
             }
             imageTimeout = setTimeout(function () {
               //self.imageIndex = self.imageIndex - 1;
-              self.$emit("update:imageIndex",self.imageIndex - 1 - self.imageSkip);
+              let newIndex = self.imageIndex - 1 - self.imageSkip;
+              if(newIndex < 0)
+              {
+                newIndex = 0;
+              }
+              self.$emit("update:imageIndex",newIndex);
               clearTimeout(imageTimeout);
               imageTimeout = null;
             }, 35);
@@ -120,10 +131,14 @@
           case 'F3':
             self.$emit('imageCaptured',{path:self.images[self.imageIndex].path,image:self.imageIndex + 1,captureNumber:e.code.replace("F","")});
             break;
-          case '1':
-          case '2':
-          case '3':
-          case '4':
+          case 'Numpad1':
+          case 'Numpad2':
+          case 'Numpad3':
+          case 'Numpad4':
+          case 'Digit1':
+          case 'Digit2':
+          case 'Digit3':
+          case 'Digit4':
             self.setImageSkip(parseInt(e.key)-1);
           break;
 
