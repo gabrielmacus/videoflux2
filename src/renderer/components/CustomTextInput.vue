@@ -62,6 +62,7 @@ input{
     methods: {
       input(event){
         this.$emit('input',event.target.value)
+
       }
     }
   }

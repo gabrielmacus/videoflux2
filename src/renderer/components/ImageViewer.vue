@@ -138,7 +138,8 @@
           case 'Digit1':
           case 'Digit2':
           case 'Digit3':
-          case 'Digit4':
+          case 'Digit4': 
+            if(e.target.localName != 'input')
             self.setImageSkip(parseInt(e.key)-1);
           break;
 

@@ -42,9 +42,9 @@
         </div>
 
         <form class="infraction-data" @submit.prevent="saveInfraction">
-          <CustomTextInput :tabindex="1" class="time-input" :mask="'hh:mm:ss'" v-model="infraction.time" placeholder="Hora"></CustomTextInput>
+          <CustomTextInput :tabindex="1" class="time-input" :mask="'hh:mm:ss'"   v-model="infraction.time" placeholder="Hora"></CustomTextInput>
           <div class="plate-input-container">
-            <CustomTextInput :tabindex="2" :disabled="infraction.unreadablePlate"  class="plate-input" v-model="infraction.plate" placeholder="Patente"></CustomTextInput>
+            <CustomTextInput :tabindex="2" :disabled="infraction.unreadablePlate"    class="plate-input" v-model="infraction.plate" placeholder="Patente"></CustomTextInput>
             <CustomCheckboxInput v-model="infraction.unreadablePlate">No se lee</CustomCheckboxInput>
           </div>
           <CustomButton :disabled="!((infraction.plate || infraction.unreadablePlate) && infraction.time)" class="save-infraction" >Guardar</CustomButton>
@@ -328,6 +328,7 @@
       }
     },
     methods: {
+ 
       async saveInfraction(){
         let self = this;
 
