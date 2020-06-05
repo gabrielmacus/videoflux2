@@ -8,6 +8,15 @@
     <span class="image-counter">{{imageIndex + 1}}/{{images.length}}</span>
   -->
 
+
+
+    <div class="time-zoom-container">
+      <span class="title-zoom">Datos de la cámara</span>
+      <div class="time-zoom">
+        <img  :src="images[imageIndex].path" />
+      </div>
+    </div>
+
     <div class="image-viewer">
       <div v-if="index % (imageSkip + 1) == 0 || imageIndex == images.length"  class="image" :class="{active:(index == 0)}" v-for="(image, index) of images.slice(imageIndex,imageIndex + (imagesPreloaded * (imageSkip + 1)))">
         <img  :style="`filter: saturate(${saturation}) brightness(${brightness});`" :data-viewer-image="index" :src="image.path"  >
@@ -138,7 +147,7 @@
           case 'Digit1':
           case 'Digit2':
           case 'Digit3':
-          case 'Digit4': 
+          case 'Digit4':
             if(e.target.localName != 'input')
             self.setImageSkip(parseInt(e.key)-1);
           break;
@@ -150,6 +159,35 @@
 </script>
 
 <style lang="scss" scoped>
+.time-zoom-container
+{
+  position: relative;
+  .title-zoom
+  {
+    right: 10px;
+    background: white;
+    padding: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    position: absolute;
+    bottom: 10px;
+    z-index: 123;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  }
+  .time-zoom
+  {
+    height: 150px;
+    position: relative;
+    overflow: hidden;
+  }
+  img
+  {
+    height:150px;
+    position: absolute;
+    transform: scale(4.45) translateY(40%) translateX(6%);
+    filter: invert(100%) saturate(250%);
+  }
+}
 .speed-control{
   span{
     display: block;

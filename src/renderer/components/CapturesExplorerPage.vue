@@ -25,6 +25,9 @@
     </div>
 
     <div class="images">
+
+
+
       <div class="loading" v-if="loadingImages">Cargando...</div>
       <ImageViewer  class="image-viewer" :imageIndex.sync="imageIndex" v-on:imageCaptured="onImageCaptured"  :images="images"></ImageViewer>
       <div class="current-infraction">
@@ -328,7 +331,7 @@
       }
     },
     methods: {
- 
+
       async saveInfraction(){
         let self = this;
 
