@@ -130,12 +130,17 @@ ipcMain.on('saveInfraction',async (event,data)=>{
         headers: headers,
         data: form.stream()
       };
+
+      console.log("Uploading infraction...")
+
       let response = await axios(request_config);
       event.sender.send('infractionSaved',{response,infraction:data.infraction});
+      console.log("Infraction uploaded.")
     }
     catch(e)
     {
       event.sender.send('infractionSaved',{error:e,infraction:data.infraction});
+      console.log("Error uploading infraction.",e)
     }
 
 

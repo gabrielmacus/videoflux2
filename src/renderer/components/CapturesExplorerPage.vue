@@ -270,9 +270,9 @@
         self.saving = false;
         if(result.error)
         {
-          console.log(result.error)
+          
           self.$toast.open({
-              message: result.error.response.status == 400 ? result.error.response.data : `Error al guardar infracción a la patente ${result.infraction.plate}`,
+              message: result.error.response && result.error.response.status == 400 ? result.error.response.data : `Error al guardar infracción a la patente ${result.infraction.plate}`,
               type: 'error',
           });
         }
