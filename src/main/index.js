@@ -75,69 +75,81 @@ app.on('activate', () => {
 
 let apiUrl = global.ENV.apiUrl
 
-ipcMain.on('saveInfraction',async (event,data)=>{
 
+async function uploadInfraction(event, data,max_tries,tries_counter) {
 
-    try
+  tries_counter = !tries_counter ? 1 : tries_counter
+  try
+  {
+    console.log("Infraction save try "+tries_counter)
+
+    let infraction = data.infraction;
+    let token = data.token;
+    let basepath = `${path.dirname(path.dirname(infraction["capture_2"]["path"]))}/infracciones`;
+
+    let equipmentNumber = basepath.match(/equipo-(\d{1,})/)[1];
+    let year = basepath.match(/año-([0-9]{1,})/)[1];
+    let month = basepath.match(/mes-([0-9]{1,2})/)[1];
+    let day = basepath.match(/dia-([0-9]{1,2})/)[1];
+
+    if(!(await fs.exists(basepath)))
     {
-      let infraction = data.infraction;
-      let token = data.token;
-      let basepath = `${path.dirname(path.dirname(infraction["capture_2"]["path"]))}/infracciones`;
-
-      let equipmentNumber = basepath.match(/equipo-(\d{1,})/)[1];
-      let year = basepath.match(/año-([0-9]{1,})/)[1];
-      let month = basepath.match(/mes-([0-9]{1,2})/)[1];
-      let day = basepath.match(/dia-([0-9]{1,2})/)[1];
-
-      if(!(await fs.exists(basepath)))
-      {
-        await fs.mkdir(basepath, { recursive: true });
-      }
-
-      let timeName =  infraction.time.replace(/:/g,"").trim();
-      infraction.plate = !infraction.unreadablePlate ? infraction.plate.toUpperCase().trim() : 'XXX000';
-
-      await fs.writeFile(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`, infraction["capture_1"].replace(/^data:image\/png;base64,/, ""), 'base64');
-      await fs.copy(infraction["capture_2"].path,`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`);
-      await fs.copy(infraction["capture_3"].path,`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`);
-
-      if(!await isOnline())
-      {
-        return event.sender.send('infractionSaved',{infraction});
-      }
-
-      const form = new Multipart();
-
-      form.append('plate',infraction.plate);
-
-      form.append('time',infraction.time);
-      form.append('day',day);
-      form.append('month',month);
-      form.append('year',year);
-
-      form.append('equipment',equipmentNumber);
-      form.append('capture_1',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`})
-      form.append('capture_2',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`})
-      form.append('capture_3',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`})
-
-
-      let headers = form.getHeaders();
-      headers['Authorization'] = `Bearer ${token}`;
-
-      const request_config = {
-        method: "post",
-        url: `${apiUrl}/capture/user`,
-        headers: headers,
-        data: form.stream()
-      };
-
-      console.log("Uploading infraction...")
-
-      let response = await axios(request_config);
-      event.sender.send('infractionSaved',{response,infraction:data.infraction});
-      console.log("Infraction uploaded.")
+      await fs.mkdir(basepath, { recursive: true });
     }
-    catch(e)
+
+    let timeName =  infraction.time.replace(/:/g,"").trim();
+    infraction.plate = !infraction.unreadablePlate ? infraction.plate.toUpperCase().trim() : 'XXX000';
+
+    await fs.writeFile(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`, infraction["capture_1"].replace(/^data:image\/png;base64,/, ""), 'base64');
+    await fs.copy(infraction["capture_2"].path,`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`);
+    await fs.copy(infraction["capture_3"].path,`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`);
+
+    if(!await isOnline())
+    {
+      return event.sender.send('infractionSaved',{infraction});
+    }
+
+    const form = new Multipart();
+
+    form.append('plate',infraction.plate);
+
+    form.append('time',infraction.time);
+    form.append('day',day);
+    form.append('month',month);
+    form.append('year',year);
+
+    form.append('equipment',equipmentNumber);
+    form.append('capture_1',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`})
+    form.append('capture_2',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`})
+    form.append('capture_3',fs.readFileSync(`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`),{filename :`${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`})
+
+
+    let headers = form.getHeaders();
+    headers['Authorization'] = `Bearer ${token}`;
+
+    const request_config = {
+      method: "post",
+      url: `${apiUrl}/capture/user`,
+      headers: headers,
+      data: form.stream()
+    };
+
+    console.log("Uploading infraction...")
+
+    let response = await axios(request_config);
+    event.sender.send('infractionSaved',{response,infraction:data.infraction});
+    console.log("Infraction uploaded.")
+
+  }
+  catch(e)
+  {
+    if(tries_counter < max_tries)
+    {
+      console.log("Error uploading infraction. Retrying...",e)
+      tries_counter++
+      await uploadInfraction(event,data,max_tries,tries_counter)
+    }
+    else
     {
       event.sender.send('infractionSaved',{error:e,infraction:data.infraction});
       console.log("Error uploading infraction.",e)
@@ -145,6 +157,15 @@ ipcMain.on('saveInfraction',async (event,data)=>{
 
 
 
+
+  }
+
+
+
+}
+
+ipcMain.on('saveInfraction',async (event,data)=>{
+  uploadInfraction(event, data,3)
 });
 ipcMain.on('loadFolder', async (event,pathToLoad) => {
 
