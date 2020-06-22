@@ -74,7 +74,7 @@ app.on('activate', () => {
 })
 
 let apiUrl = global.ENV.apiUrl
-
+let loadedPath
 
 async function uploadInfraction(event, data,max_tries,tries_counter) {
 
@@ -164,6 +164,8 @@ async function uploadInfraction(event, data,max_tries,tries_counter) {
 
 }
 
+
+
 ipcMain.on('saveInfraction',async (event,data)=>{
   uploadInfraction(event, data,3)
 });
@@ -207,6 +209,11 @@ ipcMain.on('loadFolder', async (event,pathToLoad) => {
 
 });
 
+ipcMain.on('checkInfractions',async(event)=>{
+
+
+
+})
 
 import { autoUpdater } from 'electron-updater'
 
