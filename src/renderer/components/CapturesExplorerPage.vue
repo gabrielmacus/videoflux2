@@ -22,6 +22,8 @@
         </div>
       </div>
 
+        <CustomButton class="verify-infractions"  v-on:click="verifyInfractions()">Verificar infracciones</CustomButton>
+
     </div>
 
     <div class="images">
@@ -69,6 +71,7 @@
 
 
 
+    <FullscreenMessage v-if="verifyingInfractions" message="Verificando que las infracciones se hayan subido correctamente..."></FullscreenMessage>
 
   </MainLayout>
 </template>
@@ -132,7 +135,7 @@
   {
     display: grid;
         margin-bottom: 1rem;
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: 120px 1fr 120px;
     height: 103px;
   }
   .save-infraction
@@ -226,6 +229,7 @@
   import VueCroppie from 'vue-croppie';
   import 'croppie/croppie.css' // import the croppie css manually
   import GlobalEvents from 'vue-global-events'
+  import FullscreenMessage from '../components/FullscreenMessage'
   import store from '../store/index.js';
 
 
@@ -246,9 +250,10 @@
 
   export default {
     name: 'captures-explorer-page',
-    components: { CustomButton, MainLayout, ImageViewer,CustomTextInput,CustomCheckboxInput, CustomPopup, GlobalEvents},
+    components: { FullscreenMessage, CustomButton, MainLayout, ImageViewer,CustomTextInput,CustomCheckboxInput, CustomPopup, GlobalEvents},
     data(){
       return {
+        verifyingInfractions:false,
         saving:false,
         imageIndex:0,
         breadcrumb:[],
@@ -262,6 +267,9 @@
         params:{},
       }
     },
+    destroyed(){
+      ipcRenderer.removeAllListeners('infractionSaved')
+    },
     mounted(){
 
       let self = this;
@@ -270,7 +278,7 @@
         self.saving = false;
         if(result.error)
         {
-          
+
           self.$toast.open({
               message: result.error.response && result.error.response.status == 400 ? result.error.response.data : `Error al guardar infracción a la patente ${result.infraction.plate}`,
               type: 'error',
@@ -389,6 +397,35 @@
           this.$set(this.infraction,`capture_${data.captureNumber}`,data);
         }
       },
+        verifyInfractions()
+        {
+          if(confirm("¿Verificar que las infracciones se hayan subido correctamente?"))
+          {
+            let self = this
+            self.verifyingInfractions = true
+            ipcRenderer.once('infractionsVerified',(event,result)=>{
+              self.verifyingInfractions = false
+              if(result.success)
+              {
+                self.$toast.open({
+                  message: `Infracciones verificadas correctamente`,
+                  type: 'success',
+                });
+              }
+              else
+              {
+                self.$toast.open({
+                  message: `Error al verificar las infracciones. Reintentelo nuevamente`,
+                  type: 'error',
+                });
+              }
+
+
+            })
+            ipcRenderer.send('verifyInfractions',{token:window.localStorage.getItem("token")})
+          }
+
+        },
       loadFolder(folderToLoad,callback)
       {
         let self = this;

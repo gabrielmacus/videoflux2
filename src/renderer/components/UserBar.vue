@@ -3,7 +3,7 @@
   <div class="user-bar">
     <div class="user-data">
       <figure>
-        <img src="https://www.lagotaquecolma.net/images/autores/default.png">
+        <img src="https://www.tocdoc.com/sites/default/files/default_images/default-medium.png">
       </figure>
       <span class="username">@{{$store.state.User.user.username}}</span>
       <div class="actions">

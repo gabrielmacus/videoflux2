@@ -100,9 +100,20 @@ async function uploadInfraction(event, data,max_tries,tries_counter) {
     let timeName =  infraction.time.replace(/:/g,"").trim();
     infraction.plate = !infraction.unreadablePlate ? infraction.plate.toUpperCase().trim() : 'XXX000';
 
-    await fs.writeFile(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`, infraction["capture_1"].replace(/^data:image\/png;base64,/, ""), 'base64');
-    await fs.copy(infraction["capture_2"].path,`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`);
-    await fs.copy(infraction["capture_3"].path,`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`);
+    if(!await fs.exists(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`))
+    {
+      await fs.writeFile(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`, infraction["capture_1"].replace(/^data:image\/png;base64,/, ""), 'base64');
+    }
+
+    if(!await fs.exists(`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`))
+    {
+      await fs.copy(infraction["capture_2"].path,`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`);
+    }
+    if(!await fs.exists(`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`))
+    {
+      await fs.copy(infraction["capture_3"].path,`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`);
+    }
+
 
     if(!await isOnline())
     {
@@ -163,8 +174,38 @@ async function uploadInfraction(event, data,max_tries,tries_counter) {
 
 
 }
+async function loadInfractions(path,infractions)
+{
+  let contents = await fs.readdir(path)
+  infractions = !infractions?[]:infractions
+  for(const element of contents)
+  {
+    if(element.match(/(^equipo-[0-9]{1,}$)|(^capturas$)|(^año-[0-9]{1,}$)|(^mes-[0-9]{1,2}$)|(^dia-[0-9]{1,2}$)|infracciones/))
+    {
+      await loadInfractions(path+"/"+element,infractions)
+    }
+    else if(element.match(/(.*)-(\d{1,2}\d{1,2}\d{1,2})-F1-(\d{1,3}).png/))
+    {
+      let match = element.match(/(.*)-(\d{1,2}\d{1,2}\d{1,2})-F1-(\d{1,3}).png/)
+      let year = path.match(/año-(\d{4})/)[1]
+      let month = path.match(/mes-(\d{1,2})/)[1]
+      let date = path.match(/dia-(\d{1,2})/)[1]
+      let data= {
+        plate:match[1],
+        year,
+        month,
+        date,
+        filename:element,
+        time:match[2],
+        path:path+"/"+element,
+        equipment:match[3]
+      }
 
-
+      infractions.push(data)
+    }
+  }
+  return infractions
+}
 
 ipcMain.on('saveInfraction',async (event,data)=>{
   uploadInfraction(event, data,3)
@@ -199,18 +240,81 @@ ipcMain.on('loadFolder', async (event,pathToLoad) => {
     },async (filePaths) => {
       let selectedDir = filePaths[0];
       event.sender.send('folderLoaded', {children:await loadFolder(selectedDir),parent:{name:path.basename(selectedDir),path:selectedDir}});
+
+      loadedPath = selectedDir
     });
   }
   else
   {
     event.sender.send('folderLoaded', {children:await loadFolder(pathToLoad),parent:{name:path.basename(pathToLoad),path:pathToLoad}});
+    loadedPath = pathToLoad.replace(/equipo-.*/,'')
   }
+
+
 
 
 });
 
-ipcMain.on('checkInfractions',async(event)=>{
+ipcMain.on('verifyInfractions',async(event,data)=>{
 
+  try {
+    let infractions = await loadInfractions(loadedPath)
+    let infractionsArr = JSON.parse(JSON.stringify(infractions))
+    let batchSize = 50
+    let missingInfractions = []
+
+    console.log("Checking missing infractions...")
+
+    while(infractionsArr.length > 0)
+    {
+      let batchInfractions =  infractionsArr.splice(0,batchSize)
+
+      let headers = {'Authorization':`Bearer ${data.token}`}
+
+      const request_config = {
+        method: "post",
+        url: `${apiUrl}/infraction/check-infraction-upload`,
+        headers: headers,
+        data: {infractions:batchInfractions}
+      };
+
+      let response = await axios(request_config);
+      missingInfractions = missingInfractions.concat(response.data.results)
+
+    }
+
+    console.log("Checked "+infractions.length+" infractions."+missingInfractions.length+" missing infractions.")
+    for(const missingInfraction of missingInfractions)
+    {
+      let png = await fs.readFile(missingInfraction.path);
+      // convert binary data to base64 encoded string
+      let base64 =  Buffer.from(png).toString('base64');
+
+      let infraction = {
+        'infraction':{
+          'capture_1':base64,
+          'capture_2':{
+            'path':missingInfraction.path.replace("F1","F2")
+          },
+          'capture_3':{
+            'path':missingInfraction.path.replace("F1","F3")
+          },
+          'plate':missingInfraction.plate,
+          'time':missingInfraction.time.substr(0,2)+':'+missingInfraction.time.substr(2,2)+':'+missingInfraction.time.substr(4,2)
+        },
+        'token':data.token
+
+      }
+
+      await uploadInfraction(event,infraction,3)
+    }
+
+    return event.sender.send('infractionsVerified',{success:true});
+  }
+  catch (e) {
+    console.log("ERROR",e)
+    return event.sender.send('infractionsVerified',{success:false});
+  }
 
 
 })
