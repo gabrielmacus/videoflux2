@@ -23,7 +23,7 @@
       </div>
 
         <CustomButton class="verify-infractions"  v-on:click="verifyInfractions()">Verificar infracciones</CustomButton>
-
+        <CustomButton style="height: 100%;"   v-on:click="viewStatistics()" class="verify-infractions" >Ver estadísticas</CustomButton>
     </div>
 
     <div class="images">
@@ -72,6 +72,9 @@
 
 
     <FullscreenMessage v-if="verifyingInfractions" message="Verificando que las infracciones se hayan subido correctamente..."></FullscreenMessage>
+
+    <Statistics @close="openedStatisticsView=false" :data="statistics"  v-if="openedStatisticsView"></Statistics>
+
 
   </MainLayout>
 </template>
@@ -135,7 +138,7 @@
   {
     display: grid;
         margin-bottom: 1rem;
-    grid-template-columns: 120px 1fr 120px;
+    grid-template-columns: 120px 1fr 120px 120px;
     height: 103px;
   }
   .save-infraction
@@ -231,8 +234,8 @@
   import GlobalEvents from 'vue-global-events'
   import FullscreenMessage from '../components/FullscreenMessage'
   import store from '../store/index.js';
-
-
+  import axios from 'axios'
+  import Statistics from '../components/Statistics'
 
   Vue.use(VueCroppie);
 
@@ -250,7 +253,7 @@
 
   export default {
     name: 'captures-explorer-page',
-    components: { FullscreenMessage, CustomButton, MainLayout, ImageViewer,CustomTextInput,CustomCheckboxInput, CustomPopup, GlobalEvents},
+    components: { Statistics,FullscreenMessage, CustomButton, MainLayout, ImageViewer,CustomTextInput,CustomCheckboxInput, CustomPopup, GlobalEvents},
     data(){
       return {
         verifyingInfractions:false,
@@ -265,6 +268,8 @@
         infraction:{},
         cropperPopupOpened:false,
         params:{},
+        openedStatisticsView:false,
+        statistics:{}
       }
     },
     destroyed(){
@@ -278,6 +283,7 @@
         self.saving = false;
         if(result.error)
         {
+          console.log(result)
 
           self.$toast.open({
               message: result.error.response && result.error.response.status == 400 ? result.error.response.data : `Error al guardar infracción a la patente ${result.infraction.plate}`,
@@ -396,6 +402,12 @@
         {
           this.$set(this.infraction,`capture_${data.captureNumber}`,data);
         }
+      },
+      async viewStatistics(){
+        let statistics = (await axios.get(ENV.apiUrl+'/infraction/statistics-simple/renombrador',{headers:{'Authorization':`Bearer ${window.localStorage.getItem("token")}` }})).data
+        this.statistics = statistics
+        this.openedStatisticsView = true
+
       },
         verifyInfractions()
         {
