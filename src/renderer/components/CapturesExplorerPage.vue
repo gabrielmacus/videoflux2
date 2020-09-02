@@ -402,9 +402,10 @@
         }
 
         let date = new Date(this.capturesDate.year,this.capturesDate.month - 1,this.capturesDate.date,0,0,0)
+        let equipment_number = this.capturesDate.equipment
         let ts = date.getTime()/1000
 
-        let response = await axios.get(ENV.apiUrl+`/datestatistic?timestamp=${ts}`,{headers:{'Authorization':`Bearer ${window.localStorage.getItem("token")}` }})
+        let response = await axios.get(ENV.apiUrl+`/datestatistic?timestamp=${ts}&equipment_number=${equipment_number}`,{headers:{'Authorization':`Bearer ${window.localStorage.getItem("token")}` }})
 
         if(response.data.results.length > 0)
         {
