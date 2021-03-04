@@ -1,6 +1,6 @@
 {
   "name": "videoflux2",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "author": "Gabriel Macus <gabrielmacus@gmail.com>",
   "description": "Software de renombrado para secuencia de imágenes",
   "license": null,
@@ -67,6 +67,8 @@
     "fs-extra": "^8.1.0",
     "got": "^10.2.1",
     "is-online": "^8.2.1",
+    "jimp": "^0.16.1",
+    "mkdirp": "^1.0.4",
     "multi-part": "^3.0.0",
     "node-fetch": "^2.6.0",
     "request": "^2.88.0",

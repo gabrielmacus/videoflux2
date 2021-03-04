@@ -8,7 +8,8 @@ const fetch = require('node-fetch');
 const Multipart = require('multi-part');
 const http = require('http');
 const isOnline = require('is-online');
-
+const mkdirp = require('mkdirp');
+const jimp = require('jimp');
 
 
 import DEV_ENV from '../dev.env';
@@ -76,6 +77,90 @@ app.on('activate', () => {
 let apiUrl = global.ENV.apiUrl
 let loadedPath
 
+async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_path)
+{
+  let f2_capture_number = parseInt(f2_path.split('/').pop().replace(/\..*/,''));
+  let f3_capture_number = parseInt(f3_path.split('/').pop().replace(/\..*/,''));
+  let basePath = f2_path.replace(/\/\d+\..*$/,'');
+  let videoName  = basePath.match(/\/dia-\d+\/(.*)/)[1]
+  //let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}/${m}/${d}/${videoName}/${plate}/${t}`;
+
+  const form = new Multipart();
+  form.append('plate',plate);
+  form.append('equipment',equipmentNumber);
+  form.append('day',d);
+  form.append('month',m);
+  form.append('year',y);
+  form.append('time',t);
+
+  /*
+  if(!(await fs.pathExists(sequencePath)))
+  {
+    await mkdirp(sequencePath);
+  }*/
+
+  
+  let captureIndex = 0;
+  async function saveSequenceCapture(i)
+  {
+    let capturePath = `${basePath}/${i}.jpg`;
+    //let image = await jimp.read(capturePath);
+
+    if((await fs.pathExists(capturePath)))
+    {
+      //image.resize(1280, 720).quality(60).write(`${sequencePath}/${i}.jpg`);
+      //await fs.copy(capturePath, `${sequencePath}/${i}.jpg`);
+      form.append(`captures`,fs.readFileSync(capturePath));
+      captureIndex++;
+    }
+  }
+
+  let padding = 3;
+  for(let i=f2_capture_number-padding;i<f2_capture_number;i++)
+  {
+    if(i > 0)
+    {
+      await saveSequenceCapture(i);
+
+    }
+  }
+
+  padding = 4;
+  for(let i =f2_capture_number;i<f2_capture_number + padding;i++)
+  {
+    await saveSequenceCapture(i);
+
+  }
+  
+  /*
+  for(let i =f2_capture_number;i<=f3_capture_number;i++)
+  {
+    await saveSequenceCapture(i);
+
+  }*/
+
+  /*
+  for(let i=f3_capture_number+1;i <= f3_capture_number + padding;i++)
+  {
+    await saveSequenceCapture(i);
+  }*/
+ 
+
+  let headers = form.getHeaders();
+  //headers['Authorization'] = `Bearer ${token}`;
+
+  const request_config = {
+    method: "post",
+    url: `${apiUrl}/infraction/backup`,
+    headers: headers,
+    data: form.stream()
+  };
+
+  console.log("Uploading backup...")
+  let response = await axios(request_config);
+  console.log("Backup uploaded.")
+}
+
 async function uploadInfraction(event, data,max_tries,tries_counter) {
 
   tries_counter = !tries_counter ? 1 : tries_counter
@@ -112,6 +197,11 @@ async function uploadInfraction(event, data,max_tries,tries_counter) {
     if(!await fs.exists(`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`))
     {
       await fs.copy(infraction["capture_3"].path,`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`);
+    }
+
+    if(infraction.plate != 'XXX000')
+    {
+      await saveInfractionSequence(equipmentNumber,year,month,day,timeName,infraction.plate,infraction["capture_2"].path,infraction["capture_3"].path);
     }
 
 
@@ -304,6 +394,11 @@ ipcMain.on('verifyInfractions',async(event,data)=>{
         },
         'token':data.token
 
+      }
+
+      if(infraction.infraction.plate != 'XXX000')
+      {
+        await saveInfractionSequence(equipmentNumber,year,month,day,missingInfraction.time,infraction.infraction.plate,infraction.infraction["capture_2"].path,infraction.infraction["capture_3"].path,3);
       }
 
       await uploadInfraction(event,infraction,3)
