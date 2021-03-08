@@ -398,7 +398,7 @@ ipcMain.on('verifyInfractions',async(event,data)=>{
 
       if(infraction.infraction.plate != 'XXX000')
       {
-        await saveInfractionSequence(equipmentNumber,year,month,day,missingInfraction.time,infraction.infraction.plate,infraction.infraction["capture_2"].path,infraction.infraction["capture_3"].path,3);
+        await saveInfractionSequence(missingInfraction.equipment,missingInfraction.year,missingInfraction.month,missingInfraction.date,missingInfraction.time,missingInfraction.plate,infraction.infraction["capture_2"].path,infraction.infraction["capture_3"].path);
       }
 
       await uploadInfraction(event,infraction,3)
