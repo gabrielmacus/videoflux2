@@ -84,14 +84,16 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
   let basePath = f2_path.replace(/\/\d+\..*$/,'');
   let videoName  = basePath.match(/\/dia-\d+\/(.*)/)[1]
   //let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}/${m}/${d}/${videoName}/${plate}/${t}`;
+  let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}-${m}-${d}_${equipmentNumber}`;
 
+  /*
   const form = new Multipart();
   form.append('plate',plate);
   form.append('equipment',equipmentNumber);
   form.append('day',d);
   form.append('month',m);
   form.append('year',y);
-  form.append('time',t);
+  form.append('time',t);*/
 
   /*
   if(!(await fs.pathExists(sequencePath)))
@@ -101,6 +103,7 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
 
   
   let captureIndex = 0;
+  let startNumber = 4;
   async function saveSequenceCapture(i)
   {
     let capturePath = `${basePath}/${i}.jpg`;
@@ -110,7 +113,8 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
     {
       //image.resize(1280, 720).quality(60).write(`${sequencePath}/${i}.jpg`);
       //await fs.copy(capturePath, `${sequencePath}/${i}.jpg`);
-      form.append(`captures`,fs.readFileSync(capturePath));
+      await fs.copy(capturePath, `${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`);
+      //form.append(`captures`,fs.readFileSync(capturePath));
       captureIndex++;
     }
   }
@@ -125,26 +129,28 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
     }
   }
 
+  /*
   padding = 4;
   for(let i =f2_capture_number;i<f2_capture_number + padding;i++)
   {
     await saveSequenceCapture(i);
 
-  }
+  }*/
   
-  /*
+  
   for(let i =f2_capture_number;i<=f3_capture_number;i++)
   {
     await saveSequenceCapture(i);
 
-  }*/
+  }
 
   /*
   for(let i=f3_capture_number+1;i <= f3_capture_number + padding;i++)
   {
     await saveSequenceCapture(i);
   }*/
- 
+
+  /*
 
   let headers = form.getHeaders();
   //headers['Authorization'] = `Bearer ${token}`;
@@ -158,7 +164,7 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
 
   console.log("Uploading backup...")
   let response = await axios(request_config);
-  console.log("Backup uploaded.")
+  console.log("Backup uploaded.")*/
 }
 
 async function uploadInfraction(event, data,max_tries,tries_counter) {
