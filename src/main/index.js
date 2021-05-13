@@ -84,7 +84,7 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
   let basePath = f2_path.replace(/\/\d+\..*$/,'');
   let videoName  = basePath.match(/\/dia-\d+\/(.*)/)[1]
   //let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}/${m}/${d}/${videoName}/${plate}/${t}`;
-  let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}-${m}-${d}_${equipmentNumber}`;
+  let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}-${("0"+m).slice(-2)}-${("0"+d).slice(-2)}_${equipmentNumber}`;
 
   /*
   const form = new Multipart();
