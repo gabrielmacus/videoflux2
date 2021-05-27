@@ -252,6 +252,9 @@ async function uploadInfraction(event, data,max_tries,tries_counter) {
   {
     if(tries_counter < max_tries)
     {
+      //27.05.2021 Espero x ms entre subida para no saturar el servidor
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       console.log("Error uploading infraction. Retrying...",e)
       tries_counter++
       await uploadInfraction(event,data,max_tries,tries_counter)
@@ -406,6 +409,9 @@ ipcMain.on('verifyInfractions',async(event,data)=>{
       {
         await saveInfractionSequence(missingInfraction.equipment,missingInfraction.year,missingInfraction.month,missingInfraction.date,missingInfraction.time,missingInfraction.plate,infraction.infraction["capture_2"].path,infraction.infraction["capture_3"].path);
       }
+
+      //27.05.2021 Espero x ms entre subida para no saturar el servidor
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       await uploadInfraction(event,infraction,3)
     }
