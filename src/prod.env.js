@@ -1,3 +1,3 @@
 export default {
-    apiUrl:"http://190.193.25.168:1337"
+    apiUrl:"http://200.73.171.115:1337"
 }
