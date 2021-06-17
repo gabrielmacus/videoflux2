@@ -44,7 +44,9 @@ function createWindow () {
     useContentSize: true,
     width: 1000,
     webPreferences: {
-      webSecurity: false
+      webSecurity: false,
+      nodeIntegration: true,
+      nodeIntegrationInWorker: true
     }
   })
   //mainWindow.webContents.openDevTools()
