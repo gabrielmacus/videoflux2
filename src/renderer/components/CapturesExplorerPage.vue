@@ -277,14 +277,14 @@
   import ImageViewer from './ImageViewer';
   import { ipcRenderer } from 'electron'
 
-
-
+  const navigatedCapturesLimit = 30;
 
   export default {
     name: 'captures-explorer-page',
     components: { Statistics,FullscreenMessage, CustomButton, MainLayout, ImageViewer,CustomTextInput,CustomCheckboxInput, CustomPopup, GlobalEvents},
     data(){
       return {
+        lastCaptureIndex:null,
         verifyingInfractions:false,
         saving:false,
         imageIndex:0,
@@ -359,6 +359,17 @@
       }
 
 
+    },
+    watch: {
+      imageIndex: function (newImageIndex, oldImageIndex) {
+        //this.infraction[`capture_2_index`]
+
+        if(this.lastCaptureIndex !== null && Math.abs(this.imageIndex - this.lastCaptureIndex) + 1 > navigatedCapturesLimit)
+        {
+          this.infraction = {unreadablePlate:false};
+        }
+
+      }
     },
     computed:{
       capturesDate(){
@@ -472,6 +483,8 @@
         else
         {
           this.$set(this.infraction,`capture_${data.captureNumber}`,data);
+          this.lastCaptureIndex = this.imageIndex;
+          //this.$set(this.infraction,`capture_${data.captureNumber}_index`,this.imageIndex);
         }
       },
       async unmarkRainyDay(){
@@ -556,6 +569,7 @@
         this.loadCurrentDayStatistic()
 
         let self = this;
+        self.infraction = {unreadablePlate:false};
         //self.loadingImages = true;
         ipcRenderer.once('folderLoaded', (event, result) => {
           if(!folderToLoad)
