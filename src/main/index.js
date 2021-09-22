@@ -83,11 +83,14 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
 {
   let f2_capture_number = parseInt(f2_path.split('/').pop().replace(/\..*/,''));
   let f3_capture_number = parseInt(f3_path.split('/').pop().replace(/\..*/,''));
+  
   let basePath = f2_path.replace(/\/\d+\..*$/,'');
   let videoName  = basePath.match(/\/dia-\d+\/(.*)/)[1]
   //let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}/${m}/${d}/${videoName}/${plate}/${t}`;
-  let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}-${("0"+m).slice(-2)}-${("0"+d).slice(-2)}_${equipmentNumber}`;
-
+  //let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}-${("0"+m).slice(-2)}-${("0"+d).slice(-2)}_${equipmentNumber}`;
+  let sequencePath = basePath.replace(/\\capturas.*|\/capturas.*|\\equipo-\d*.*|\/equipo-\d*.*/g,``)+`/capturas/registro/${y}-${("0"+m).slice(-2)}-${("0"+d).slice(-2)}_${equipmentNumber}`; //basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}-${("0"+m).slice(-2)}-${("0"+d).slice(-2)}_${equipmentNumber}`;
+  //console.log("BASE",basePath)
+  //console.log("SEQ",sequencePath)
   /*
   const form = new Multipart();
   form.append('plate',plate);
@@ -110,9 +113,10 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
   {
     let capturePath = `${basePath}/${i}.jpg`;
     //let image = await jimp.read(capturePath);
-
     if((await fs.pathExists(capturePath)))
     {
+      
+      //console.log("image",`${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`)
       //image.resize(1280, 720).quality(60).write(`${sequencePath}/${i}.jpg`);
       //await fs.copy(capturePath, `${sequencePath}/${i}.jpg`);
       await fs.copy(capturePath, `${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`);
