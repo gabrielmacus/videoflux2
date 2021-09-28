@@ -360,17 +360,23 @@
 
 
     },
+    /*
     watch: {
       imageIndex: function (newImageIndex, oldImageIndex) {
         //this.infraction[`capture_2_index`]
-
+        
         if(this.lastCaptureIndex !== null && Math.abs(this.imageIndex - this.lastCaptureIndex) + 1 > navigatedCapturesLimit)
         {
-          this.infraction = {unreadablePlate:false};
+          
+          if(confirm("¿Limpiar capturas?"))
+          {
+            this.infraction = {unreadablePlate:false};
+          }
+          this.lastCaptureIndex = newImageIndex;
         }
 
       }
-    },
+    },*/
     computed:{
       capturesDate(){
 
@@ -472,6 +478,16 @@
       },
       async onImageCaptured(data)
       {
+
+        if(Math.abs(this.imageIndex - this.lastCaptureIndex) + 1 > navigatedCapturesLimit)
+        {
+          
+          if(confirm("¿Limpiar capturas anteriores?"))
+          {
+            this.infraction = {unreadablePlate:false};
+          }
+        }
+
         if(data.captureNumber == "1")
         {
           this.cropperPopupOpened = true;
