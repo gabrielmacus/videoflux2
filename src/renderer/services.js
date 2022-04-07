@@ -102,7 +102,6 @@ export default {
 
           let response  = await axios.post(`${ENV.apiUrl}/user/login`,account);
 
-
           window.localStorage.setItem("token",response.data.token);
 
           return response.data;

@@ -1,6 +1,6 @@
 <template>
 
-  <div class="container">
+  <div class="container" >
     <GlobalEvents
       @keydown="onKeyPress"
     />
@@ -8,31 +8,52 @@
     <span class="image-counter">{{imageIndex + 1}}/{{images.length}}</span>
   -->
 
+    <div v-if="loadingImages" class="loader">
+      <div class="lds-dual-ring"></div>
+    </div>
 
 
     <div class="time-zoom-container">
       <span class="title-zoom">Datos de la cámara</span>
       <div class="time-zoom">
-        <img  :src="images[imageIndex].path" />
+        <img  :src="filteredImages[imageIndex].path" />
       </div>
     </div>
 
-    <div class="image-viewer">
-      <div v-if="index % (imageSkip + 1) == 0 || imageIndex == images.length"  class="image" :class="{active:(index == 0)}" v-for="(image, index) of images.slice(imageIndex,imageIndex + (imagesPreloaded * (imageSkip + 1)))">
-        <img  :style="`filter: saturate(${saturation}) brightness(${brightness});`" :data-viewer-image="index" :src="image.path"  >
-        <span class="counter">{{imageIndex + 1}} / {{images.length}}</span>
-      </div>
+    <div class="image-viewer"  >
+      <div  
+        v-bind:key="index.name"
+        v-if="index % (imageSkip + 1) == 0 || imageIndex == filteredImages.length"
+        class="image" 
+        :class="{active:(index == 0)}" 
+        v-for="(image, index) of filteredImages.slice(imageIndex,imageIndex + (imagesPreloaded * (imageSkip + 1)))">
 
-      <div v-if="images.length == 0" class="no-images" >
+        <img  :style="`filter: saturate(${saturation}) brightness(${brightness});`" :data-viewer-image="index" :src="image.path"  >
+        <span class="counter">{{imageIndex + 1}} / {{filteredImages.length}}</span>
+        
+
+
+
+      </div>
+      <div v-if="filteredImages.length == 0" class="no-images" >
         <p>No hay imágenes para mostrar</p>
       </div>
 
       <div class="speed-control">
+        <template v-if="!showKeyOnly || keyImagesNotPresent">
         <span @click="setImageSkip(0)" :class="{active:imageSkip == 0}">x1</span>
         <span @click="setImageSkip(1)" :class="{active:imageSkip == 1}">x2</span>
         <span @click="setImageSkip(2)" :class="{active:imageSkip == 2}">x3</span>
         <span @click="setImageSkip(3)" :class="{active:imageSkip == 3}">x4</span>
+        </template>
+
+        <template v-if="!keyImagesNotPresent">
+        <span @click="toggleShowKeyOnly()" v-if="!showKeyOnly" >Ver F3</span>
+        <span @click="toggleShowKeyOnly()" v-if="showKeyOnly" >Ver todo</span>
+        </template>
+        
       </div>
+
     </div>
     <!---
     <div  v-if="images.length > 0" class="image-filters">
@@ -53,6 +74,18 @@
   </div>
 </template>
 <script>
+
+  window.addEventListener('keydown', (e) => {
+      if (e.target.localName != 'input') {   // if you need to filter <input> elements
+        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+              e.preventDefault();
+          }
+      }
+  }, {
+      capture: true
+  });
+
+
   import GlobalEvents from 'vue-global-events'
   import 'vue-range-component/dist/vue-range-slider.css'
   import VueRangeSlider from 'vue-range-component'
@@ -68,13 +101,35 @@
         saturation:1,
         brightness:1,
         imageSkip:0,
+        showKeyOnly:true,
+        lastFilteredImageIndex:0,
+        loadingImages: false,
+        keyImagesNotPresent:false
+
       }
     },
     components: { VueRangeSlider, GlobalEvents },
-    mounted() {
-
+     watch: {
+        images () {
+          if(this.images.filter(i => i.name.match(/^[0-9]{1,}-key\.jpg$/)).length == 0)
+          {
+            this.keyImagesNotPresent = true;
+          }
+          else
+          {
+            this.keyImagesNotPresent = false;
+          }
+        }
     },
     computed:{
+      filteredImages()
+      {
+        if(this.showKeyOnly && !this.keyImagesNotPresent)
+        {
+          return this.images.filter(i => i.name.match(/^[0-9]{1,}-key\.jpg$/))
+        }
+        return this.images;
+      },
       imagesLoaded()
       {
         let completed = false;
@@ -90,35 +145,42 @@
       }
     },
     methods: {
+      toggleShowKeyOnly()
+      { 
+        this.loadingImages = true;
+        
+        const selectedImageName = this.filteredImages[this.imageIndex].name;
+
+        this.showKeyOnly = !this.showKeyOnly;
+        if(this.showKeyOnly)
+        {
+          this.setImageSkip(0);
+          this.$emit("update:imageIndex",this.lastFilteredImageIndex);
+          
+        }
+        else
+        {
+          this.lastFilteredImageIndex = this.imageIndex;
+          const index = this.filteredImages.findIndex(i => i.name == selectedImageName);
+          this.$emit("update:imageIndex",index);
+        }
+        let self = this;
+        setTimeout(()=>{
+          self.loadingImages = false;
+        },1000);
+        
+      },
       setImageSkip(i){
         this.imageSkip = i;
       },
-      async onKeyPress(e){
-        await Vue.nextTick();
+      navigateBackwards(){
         let self = this;
-        let timeout = null;
-        switch (e.code) {
-          case 'ArrowRight':
-            if(imageTimeout || !self.imagesLoaded || self.imageIndex == self.images.length - 1)
-            {
-              return;
-            }
-            imageTimeout = setTimeout(function () {
-              //self.imageIndex = self.imageIndex + 1;
-              let newIndex =self.imageIndex + 1 + self.imageSkip;
-              if(newIndex > self.images.length - 1)
-              {
-                newIndex = self.images.length - 1;
-              }
 
-              self.$emit("update:imageIndex",newIndex);
+        if(self.loadingImages){
+          return;
+        }
 
-              clearTimeout(imageTimeout);
-              imageTimeout = null;
-            }, 35);
-            break;
-          case 'ArrowLeft':
-            if(imageTimeout || !self.imagesLoaded || self.imageIndex == 0)
+        if(imageTimeout || !self.imagesLoaded || self.imageIndex == 0)
             {
               return;
             }
@@ -133,12 +195,82 @@
               clearTimeout(imageTimeout);
               imageTimeout = null;
             }, 35);
+      },
+      navigateForwards(){
+        let self = this;
 
+        if(self.loadingImages){
+          return;
+        }
+        
+        if(imageTimeout || !self.imagesLoaded || self.imageIndex == self.filteredImages.length - 1)
+            {
+              return;
+            }
+            imageTimeout = setTimeout(function () {
+              //self.imageIndex = self.imageIndex + 1;
+              let newIndex =self.imageIndex + 1 + self.imageSkip;
+              if(newIndex > self.filteredImages.length - 1)
+              {
+                newIndex = self.filteredImages.length - 1;
+              }
+
+              self.$emit("update:imageIndex",newIndex);
+
+              clearTimeout(imageTimeout);
+              imageTimeout = null;
+            }, 35);
+      },
+      async onKeyPress(e){
+        await Vue.nextTick();
+        let self = this;
+        let timeout = null;
+        switch (e.code) {
+          case 'ArrowUp':
+            if(this.keyImagesNotPresent)
+            {
+              return;
+            }
+            if(self.showKeyOnly)
+            {
+              self.toggleShowKeyOnly();
+            }
+            self.navigateForwards();
+            break;
+          case 'ArrowDown':
+            if(this.keyImagesNotPresent)
+            {
+              return;
+            }
+            if(self.showKeyOnly)
+            {
+              self.toggleShowKeyOnly();
+            }
+            self.navigateBackwards();
+            break;
+          case 'ArrowRight':
+            if(!self.showKeyOnly)
+            {
+              self.toggleShowKeyOnly();
+            }
+            self.navigateForwards();
+            break;
+          case 'ArrowLeft':
+            if(!self.showKeyOnly)
+            {
+              self.toggleShowKeyOnly();
+            }
+            self.navigateBackwards();
+            break;
+          case 'F4':
+            self.toggleShowKeyOnly();
             break;
           case 'F1':
           case 'F2':
           case 'F3':
-            self.$emit('imageCaptured',{path:self.images[self.imageIndex].path,image:self.imageIndex + 1,captureNumber:e.code.replace("F","")});
+            const path = self.filteredImages[self.imageIndex].path;
+            const index = self.images.findIndex(i => i.path == path);
+            self.$emit('imageCaptured',{path,image:index + 1,captureNumber:e.code.replace("F","")});
             break;
           case 'Numpad1':
           case 'Numpad2':
@@ -159,6 +291,44 @@
 </script>
 
 <style lang="scss" scoped>
+
+.lds-dual-ring {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  border-color: #fff transparent #fff transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.loader
+{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height: 100%;
+  background: rgba(0,0,0,0.75);
+  z-index: 2;
+}
 .time-zoom-container
 {
   position: relative;

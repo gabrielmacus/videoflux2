@@ -1,7 +1,7 @@
 <template>
 
   <div class="container">
-    <button :class="{loading:loading}" :disabled="disabled" v-on="$listeners" >
+    <button :class="{loading:loading}" :disabled="disabled" v-on="$listeners" :type="htmlType" >
 
       <span v-if="!loading"><slot></slot></span>
       <span v-else>Cargando...</span>
@@ -53,7 +53,7 @@ button
 
   export default {
     name: 'CustomButton',
-    props:['disabled','loading'],
+    props:['disabled','loading','htmlType'],
     components: {  },
     data(){
       return {

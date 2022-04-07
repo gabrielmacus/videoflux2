@@ -79,6 +79,7 @@ app.on('activate', () => {
 let apiUrl = global.ENV.apiUrl
 let loadedPath
 
+
 async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_path)
 {
   let f2_capture_number = parseInt(f2_path.split('/').pop().replace(/\..*/,''));
@@ -109,6 +110,7 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
   
   let captureIndex = 0;
   let startNumber = 4;
+
   async function saveSequenceCapture(i)
   {
     let capturePath = `${basePath}/${i}.jpg`;
@@ -119,7 +121,8 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
       //console.log("image",`${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`)
       //image.resize(1280, 720).quality(60).write(`${sequencePath}/${i}.jpg`);
       //await fs.copy(capturePath, `${sequencePath}/${i}.jpg`);
-      await fs.copy(capturePath, `${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`);
+      const copyPath = `${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`;
+      await fs.copy(capturePath, copyPath);
       //form.append(`captures`,fs.readFileSync(capturePath));
       captureIndex++;
     }
@@ -150,6 +153,7 @@ async function saveInfractionSequence(equipmentNumber,y,m,d,t,plate,f2_path, f3_
 
   }
 
+  
   /*
   for(let i=f3_capture_number+1;i <= f3_capture_number + padding;i++)
   {
@@ -197,25 +201,34 @@ async function uploadInfraction(event, data,max_tries,tries_counter) {
     let timeName =  infraction.time.replace(/:/g,"").trim();
     infraction.plate = !infraction.unreadablePlate ? infraction.plate.toUpperCase().trim() : 'XXX000';
 
+    const f1Path =  `${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`;
+    const f2Path = `${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`;
+    const f3Path = `${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`;
+    const infractionCaptures = [];
+
     if(!await fs.exists(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`))
     {
-      await fs.writeFile(`${basepath}/${infraction.plate}-${timeName}-F1-${equipmentNumber}.png`, infraction["capture_1"].replace(/^data:image\/png;base64,/, ""), 'base64');
+      await fs.writeFile(f1Path,infraction["capture_1"].replace(/^data:image\/png;base64,/, ""), 'base64');
+      infractionCaptures.push(f1Path);
     }
 
     if(!await fs.exists(`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`))
     {
-      await fs.copy(infraction["capture_2"].path,`${basepath}/${infraction.plate}-${timeName}-F2-${equipmentNumber}.png`);
+      await fs.copy(infraction["capture_2"].path,f2Path);
+      infractionCaptures.push(f2Path);
     }
     if(!await fs.exists(`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`))
     {
-      await fs.copy(infraction["capture_3"].path,`${basepath}/${infraction.plate}-${timeName}-F3-${equipmentNumber}.png`);
+      await fs.copy(infraction["capture_3"].path,f3Path);
+      infractionCaptures.push(f3Path);
     }
 
+    
     if(infraction.plate != 'XXX000')
     {
       await saveInfractionSequence(equipmentNumber,year,month,day,timeName,infraction.plate,infraction["capture_2"].path,infraction["capture_3"].path);
     }
-
+    
 
     if(!await isOnline())
     {
@@ -250,7 +263,7 @@ async function uploadInfraction(event, data,max_tries,tries_counter) {
     console.log("Uploading infraction...")
 
     let response = await axios(request_config);
-    event.sender.send('infractionSaved',{response,infraction:data.infraction});
+    event.sender.send('infractionSaved',{response,infraction:data.infraction,infractionCaptures});
     console.log("Infraction uploaded.")
 
   }
@@ -312,6 +325,15 @@ async function loadInfractions(path,infractions)
   return infractions
 }
 
+ipcMain.on('deleteCaptures', async (event, data)=>{
+
+  for(const path of  data.captures)
+  {
+    await fs.unlink(path);
+  }
+  
+});
+
 ipcMain.on('saveInfraction',async (event,data)=>{
   uploadInfraction(event, data,3)
 });
@@ -319,7 +341,8 @@ ipcMain.on('loadFolder', async (event,pathToLoad) => {
 
   async function loadFolder(selectedDir) {
     let dirNameRegex = /(^equipo-[0-9]{1,}$)|(^capturas$)|(^año-[0-9]{1,}$)|(^mes-[0-9]{1,2}$)|(^dia-[0-9]{1,2}$)|(^.*\.(mp4|avi)$)/;
-    let fileNameRegex = /^[0-9]{1,}\.jpg$/;
+    //let fileNameRegex = /^[0-9]{1,}\.jpg$/;
+    let fileNameRegex = /^[0-9]{1,}\.jpg$|^[0-9]{1,}-key\.jpg$/;
 
     let dirContent = (await fs.readdir(selectedDir))
     .map((element,key)=>{

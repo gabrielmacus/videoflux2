@@ -69,7 +69,10 @@
             <CustomTextInput :tabindex="2" :disabled="infraction.unreadablePlate"    class="plate-input" v-model="infraction.plate" placeholder="Patente"></CustomTextInput>
             <CustomCheckboxInput v-model="infraction.unreadablePlate">No se lee</CustomCheckboxInput>
           </div>
-          <CustomButton :disabled="!((infraction.plate || infraction.unreadablePlate) && infraction.time)" class="save-infraction" >Guardar</CustomButton>
+          <div class="button-container">
+            <CustomButton :disabled="!((infraction.plate || infraction.unreadablePlate) && infraction.time)" class="save-infraction" >Guardar</CustomButton>
+            <CustomButton :htmlType="'button'"  v-if="lastSavedInfraction" v-on:click="undoLastInfraction()">Deshacer última infracción</CustomButton>
+          </div>
         </form>
 
       </div>
@@ -98,6 +101,11 @@
 
 <style scoped lang="scss">
   @import "../assets/theme.scss";
+  .button-container
+  {
+    display:grid;
+    grid-gap:10px;
+  }
   .disabled
   {
     pointer-events: none;
@@ -277,6 +285,9 @@
   import ImageViewer from './ImageViewer';
   import { ipcRenderer } from 'electron'
 
+  import Services from '../services.js';
+
+
   const navigatedCapturesLimit = 30;
 
   export default {
@@ -284,6 +295,8 @@
     components: { Statistics,FullscreenMessage, CustomButton, MainLayout, ImageViewer,CustomTextInput,CustomCheckboxInput, CustomPopup, GlobalEvents},
     data(){
       return {
+        lastSavedInfraction:null,
+        lastSavedCaptures:null,
         lastCaptureIndex:null,
         verifyingInfractions:false,
         saving:false,
@@ -321,6 +334,10 @@
           });
         }
         else {
+
+          self.lastSavedCaptures = result.infractionCaptures;
+          self.lastSavedInfraction = result.infraction;
+        
           self.$toast.open({
               message: `Infracción a la patente ${result.infraction.plate} guardada correctamente`,
               type: 'success',
@@ -411,6 +428,19 @@
       }
     },
     methods: {
+      async undoLastInfraction()
+      {
+        if(!confirm(`¿Eliminar última infracción subida? (Patente: ${this.lastSavedInfraction.plate})`))
+        {
+          return;
+        }
+        
+        await Services.API.execute('renombrador/remove-last-infraction','POST');
+        ipcRenderer.send('deleteCaptures',{captures:this.lastSavedCaptures});
+        this.lastSavedCaptures = null;
+        this.lastSavedInfraction = null;
+        
+      },
       async loadCurrentDayStatistic()
       {
         if(!this.capturesDate)
@@ -449,6 +479,7 @@
          }
 
         self.saving = true;
+        
         ipcRenderer.send('saveInfraction',{infraction:this.infraction,token:window.localStorage.getItem("token")});
         self.infraction = {unreadablePlate:false};
       },
