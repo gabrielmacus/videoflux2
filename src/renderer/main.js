@@ -1,7 +1,7 @@
 
 //import isOnline  from 'is-online';
 //window.isOnline =  await isOnline();
-window.isOnline = navigator.onLine;
+//window.isOnline = navigator.onLine;
 
 
 import Vue from 'vue'

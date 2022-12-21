@@ -1,17 +1,17 @@
-<template>
 
+<template>
   <div class="background">
     <form class="login-container" @submit.prevent="login">
       <CustomTextInput v-model="user.username">Nombre de usuario</CustomTextInput>
       <CustomTextInput type="password" v-model="user.password">Contraseña</CustomTextInput>
       <CustomButton >Ingresar</CustomButton>
-
+      <CustomButton @click="offlineSession"  htmlType="button" class="offline-mode" >Sesión offline</CustomButton>
     </form>
   </div>
-
 </template>
 
 <style scoped lang="scss">
+  
   @import "../assets/theme.scss";
   .background
   {
@@ -55,15 +55,13 @@
   import Services from '../services.js';
   Vue.use(VueCroppie);
 
-
   import MainLayout from './MainLayout';
   import CustomButton from './CustomButton';
   import CustomPopup from './CustomPopup';
   import CustomTextInput from './CustomTextInput';
   import ImageViewer from './ImageViewer';
-  import { ipcRenderer } from 'electron'
-
-
+  import { ipcRenderer, app } from 'electron'
+  import store from '../store';
 
 
   export default {
@@ -81,6 +79,13 @@
 
     },
     methods: {
+      offlineSession() 
+      {
+        //app.commandLine.appendSwitch('offline');
+
+        store.dispatch("User/setOfflineMode", true);
+        this.$router.push("/");
+      },
       async login(){
 
         try {
@@ -88,8 +93,12 @@
           this.$router.push("/");
 
         } catch (e) {
-            console.log(e);
-          alert(e.response.data);
+          if (e.response)
+          {
+            alert(e.response.data);
+            return;
+          }
+          alert("No hay conexión con el servidor. Puede utilizar el modo offline si desear seguir trabajando.")
         } finally {
 
         }

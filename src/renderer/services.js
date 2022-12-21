@@ -5,17 +5,20 @@ import sailsIOClient from 'sails.io.js';
 
 import DEV_ENV from '../dev.env';
 import PROD_ENV from '../prod.env';
+import isOnline from 'is-online';
+
+
 window.ENV = DEV_ENV;
 if (process.env.NODE_ENV === 'production') {
 
   Object.assign(window.ENV, PROD_ENV);
 }
 
-
-
-
 export default {
 
+    async isOnline(){
+        return !store.state.User.offlineMode && await isOnline()
+    },
     formatBytes(bytes, decimals = 2){
          if (bytes === 0) return '0 Bytes';
 
@@ -41,7 +44,7 @@ export default {
     "API":{
         async logout()
         { 
-          if(socket.isConnected())
+          if(typeof socket !== 'undefined' && socket.isConnected())
           socket.disconnect();
           window.localStorage.removeItem("token");
           router.push("/login");

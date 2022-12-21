@@ -5,7 +5,9 @@
       <figure>
         <img src="https://www.tocdoc.com/sites/default/files/default_images/default-medium.png">
       </figure>
-      <span class="username">@{{$store.state.User.user.username}}</span>
+      <span v-if="$store.state.User.user.id" class="username">@{{$store.state.User.user.username}}</span>
+      <span class="username">Sesión offline</span>
+
       <div class="actions">
         <span @click="logout" class="action logout">Salir</span>
       </div>
@@ -61,7 +63,7 @@ padding: 0.75rem;
 
 <script>
   import Services from '../services.js';
-
+  
   export default {
     name: 'UserBar',
     components: {  },
@@ -70,7 +72,6 @@ padding: 0.75rem;
       }
     },
     mounted(){
-      console.log(this.$store.state.User)
     },
     methods: {
       logout(){

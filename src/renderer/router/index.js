@@ -1,3 +1,4 @@
+
 import Vue from 'vue'
 import Router from 'vue-router'
 import Services from '../services.js';
@@ -27,14 +28,15 @@ window.router = new Router({
   ]
 });
 
-router.beforeEach(async (to, from, next) => {
-
-    if(!isOnline && to.name == "login-page")
+router.beforeEach(async (to, from, next) => { 
+    /*if(!(await Services.isOnline()) && to.name == "login-page")
     {
       return next("/");
-    }
-    if(!isOnline || to.meta.guest || await Services.API.refreshToken())
+    }*/
+    window.isOnline = await Services.isOnline()
+    if(!window.isOnline  || to.meta.guest || await Services.API.refreshToken())
     {
+      
       return next();
     }
 

@@ -23,18 +23,20 @@
       </div>
 
         <div class="extra-actions">
-          <CustomButton class="verify-infractions"  v-on:click="verifyInfractions()">Verificar infracciones</CustomButton>
-          <CustomButton style="height: 100%;"   v-on:click="viewStatistics()" class="verify-infractions" >Ver estadísticas</CustomButton>
+          <CustomButton class="verify-infractions" :class="{'disabled':!isOnline}"  v-on:click="verifyInfractions()">Verificar infracciones</CustomButton>
+          <CustomButton style="height: 100%;" :class="{'disabled':!isOnline}"  v-on:click="viewStatistics()" class="verify-infractions" >Ver estadísticas</CustomButton>
 
 
 
-          <CustomButton v-if="currentDayStatistic && currentDayStatistic.weather == 'RAINY'"
-                        :class="{'disabled':!capturesDate}"
+          <CustomButton 
+                        v-if="currentDayStatistic && currentDayStatistic.weather == 'RAINY'"
+                        :class="{'disabled':!capturesDate, 'disabled':!isOnline}"
                         style="height: 100%;"
                         class="mark-rainy-day"
                         v-on:click="unmarkRainyDay()" >Desmarcar día lluvioso</CustomButton>
-          <CustomButton v-else
-                        :class="{'disabled':!capturesDate}"
+          <CustomButton 
+                        v-else
+                        :class="{'disabled':!capturesDate, 'disabled':!isOnline}"
                         style="height: 100%;"
                         class="mark-rainy-day"
                         v-on:click="markRainyDay()" >Marcar día lluvioso</CustomButton>
@@ -480,7 +482,7 @@
 
         self.saving = true;
         
-        ipcRenderer.send('saveInfraction',{infraction:this.infraction,token:window.localStorage.getItem("token")});
+        ipcRenderer.send('saveInfraction',{isOnline:window.isOnline,infraction:this.infraction,token:window.localStorage.getItem("token")});
         self.infraction = {unreadablePlate:false};
       },
       onKeyPress(e){

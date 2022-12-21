@@ -1,5 +1,6 @@
 const state = {
-  user:{}
+  user:{},
+  offlineMode:false
 }
 
 const mutations = {
@@ -7,7 +8,10 @@ const mutations = {
   {
     state.user = data;
   },
-
+  SET_OFFLINE_MODE(state, data)
+  {
+    state.offlineMode = data;
+  }
 }
 
 
@@ -15,6 +19,11 @@ const actions = {
   setData({commit},data)
   {
     commit("SET_USER",data);
+
+  },
+  setOfflineMode({commit},data)
+  {
+    commit("SET_OFFLINE_MODE",data);
   }
 }
 

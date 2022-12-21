@@ -3,7 +3,7 @@
   <div class="main-layout">
     <header>
 
-      <UserBar v-if="isOnline"></UserBar>
+      <UserBar></UserBar>
       <slot name="header">
       </slot>
     </header>
@@ -41,21 +41,21 @@ main
 <script>
   import { ipcRenderer } from 'electron'
   import UserBar from './UserBar.vue'
-  import isOnline  from 'is-online';
+  //import isOnline  from 'is-online';
 
   export default {
     name: 'main-layout',
     components: { UserBar },
     data(){
       return {
-        isOnline:false
+        //isOnline:false
       }
     },
     computed:{
 
     },
     async mounted() {
-      this.isOnline = window.isOnline;//await isOnline();
+      //this.isOnline = window.isOnline;//await isOnline();
     },
     methods: {
 
