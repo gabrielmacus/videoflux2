@@ -84,7 +84,7 @@ async function saveInfractionSequence(equipmentNumber, y, m, d, t, plate, f2_pat
   let f2_capture_number = parseInt(f2_path.split('/').pop().replace(/\..*/, ''));
   let f3_capture_number = parseInt(f3_path.split('/').pop().replace(/\..*/, ''));
 
-  let basePath = f2_path.replace(/\/\d+\..*$/, '');
+  let basePath = f2_path.replace(/\/\d+.*\..*$/, '');
   let videoName = basePath.match(/\/dia-\d+\/(.*)/)[1]
   //let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}/${m}/${d}/${videoName}/${plate}/${t}`;
   //let sequencePath = basePath.replace(/\/equipo-\d+\/año-\d+\/mes-\d+\/dia-\d+\/.*/,'')+`/registro/${y}-${("0"+m).slice(-2)}-${("0"+d).slice(-2)}_${equipmentNumber}`;
@@ -112,19 +112,24 @@ async function saveInfractionSequence(equipmentNumber, y, m, d, t, plate, f2_pat
 
   async function saveSequenceCapture(i) {
     let capturePath = `${basePath}/${i}.jpg`;
+    if(!(await fs.pathExists(capturePath)))
+    {
+      capturePath = `${basePath}/${i}-key.jpg`;
+    }
     //let image = await jimp.read(capturePath);
+    
     if ((await fs.pathExists(capturePath))) {
-
       //console.log("image",`${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`)
       //image.resize(1280, 720).quality(60).write(`${sequencePath}/${i}.jpg`);
       //await fs.copy(capturePath, `${sequencePath}/${i}.jpg`);
       const copyPath = `${sequencePath}/${plate}-${t}-F${startNumber + captureIndex}-${equipmentNumber}.png`;
+      //console.log("COPY PATH!",copyPath)
       await fs.copy(capturePath, copyPath);
       //form.append(`captures`,fs.readFileSync(capturePath));
       captureIndex++;
     }
   }
-
+  
   let padding = 3;
   for (let i = f2_capture_number - padding; i < f2_capture_number; i++) {
     if (i > 0) {
@@ -172,24 +177,22 @@ async function saveInfractionSequence(equipmentNumber, y, m, d, t, plate, f2_pat
 }
 
 async function uploadInfraction(event, data, max_tries, tries_counter) {
-
   tries_counter = !tries_counter ? 1 : tries_counter
   try {
     console.log("Infraction save try " + tries_counter)
-
     let infraction = data.infraction;
     let token = data.token;
     let basepath = `${path.dirname(path.dirname(infraction["capture_2"]["path"]))}/infracciones`;
-
+    
     let equipmentNumber = basepath.match(/equipo-(\d{1,})/)[1];
     let year = basepath.match(/año-([0-9]{1,})/)[1];
     let month = basepath.match(/mes-([0-9]{1,2})/)[1];
     let day = basepath.match(/dia-([0-9]{1,2})/)[1];
-
+    
     if (!(await fs.exists(basepath))) {
       await fs.mkdir(basepath, { recursive: true });
     }
-
+    
     let timeName = infraction.time.replace(/:/g, "").trim();
     infraction.plate = !infraction.unreadablePlate ? infraction.plate.toUpperCase().trim() : 'XXX000';
 
@@ -212,14 +215,11 @@ async function uploadInfraction(event, data, max_tries, tries_counter) {
       infractionCaptures.push(f3Path);
     }
 
-
     if (infraction.plate != 'XXX000') {
       await saveInfractionSequence(equipmentNumber, year, month, day, timeName, infraction.plate, infraction["capture_2"].path, infraction["capture_3"].path);
     }
 
-
-    console.log("ISONLINE",data.isOnline)
-    if (!data.isOnline /*!await isOnline()*/) {
+    if (data.isOnline === false /*!await isOnline()*/) {
       return event.sender.send('infractionSaved', { infraction });
     }
 

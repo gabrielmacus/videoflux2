@@ -89,6 +89,8 @@
       async login(){
 
         try {
+          
+          store.dispatch("User/setOfflineMode", false);
           await Services.API.login(this.user);
           this.$router.push("/");
 

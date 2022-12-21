@@ -314,7 +314,8 @@
         cropperPopupOpened:false,
         params:{},
         openedStatisticsView:false,
-        statistics:{}
+        statistics:{},
+        isOnline:window.isOnline
       }
     },
     destroyed(){
@@ -482,7 +483,7 @@
 
         self.saving = true;
         
-        ipcRenderer.send('saveInfraction',{isOnline:window.isOnline,infraction:this.infraction,token:window.localStorage.getItem("token")});
+        ipcRenderer.send('saveInfraction',{isOnline:this.isOnline,infraction:this.infraction,token:window.localStorage.getItem("token")});
         self.infraction = {unreadablePlate:false};
       },
       onKeyPress(e){

@@ -13,10 +13,10 @@
     </div>
 
 
-    <div class="time-zoom-container">
+    <div v-if="filteredImages[imageIndex]" class="time-zoom-container">
       <span class="title-zoom">Datos de la cámara</span>
       <div class="time-zoom">
-        <img  :src="filteredImages[imageIndex].path" />
+        <img    :src="filteredImages[imageIndex].path" />
       </div>
     </div>
 
@@ -47,10 +47,12 @@
         <span @click="setImageSkip(3)" :class="{active:imageSkip == 3}">x4</span>
         </template>
 
-        <template v-if="!keyImagesNotPresent">
+        <!--
+          <template v-if="!keyImagesNotPresent">
         <span @click="toggleShowKeyOnly()" v-if="!showKeyOnly" >Ver F3</span>
         <span @click="toggleShowKeyOnly()" v-if="showKeyOnly" >Ver todo</span>
         </template>
+        -->
         
       </div>
 
@@ -101,7 +103,7 @@
         saturation:1,
         brightness:1,
         imageSkip:0,
-        showKeyOnly:true,
+        showKeyOnly:false,
         lastFilteredImageIndex:0,
         loadingImages: false,
         keyImagesNotPresent:false
@@ -226,45 +228,25 @@
         let self = this;
         let timeout = null;
         switch (e.code) {
-          case 'ArrowUp':
-            if(this.keyImagesNotPresent)
-            {
-              return;
-            }
-            if(self.showKeyOnly)
-            {
-              self.toggleShowKeyOnly();
-            }
-            self.navigateForwards();
-            break;
-          case 'ArrowDown':
-            if(this.keyImagesNotPresent)
-            {
-              return;
-            }
-            if(self.showKeyOnly)
-            {
-              self.toggleShowKeyOnly();
-            }
-            self.navigateBackwards();
-            break;
           case 'ArrowRight':
-            if(!self.showKeyOnly)
+            if( (!self.showKeyOnly && !this.keyImagesNotPresent && e.ctrlKey) || ((self.showKeyOnly && !this.keyImagesNotPresent && !e.ctrlKey)) )
             {
               self.toggleShowKeyOnly();
             }
+
             self.navigateForwards();
             break;
           case 'ArrowLeft':
-            if(!self.showKeyOnly)
+          if( (!self.showKeyOnly && !this.keyImagesNotPresent && e.ctrlKey) || ((self.showKeyOnly && !this.keyImagesNotPresent && !e.ctrlKey)) )
             {
               self.toggleShowKeyOnly();
             }
+
             self.navigateBackwards();
             break;
-          case 'F4':
+          /*case 'F4':
             self.toggleShowKeyOnly();
-            break;
+            break;*/
           case 'F1':
           case 'F2':
           case 'F3':

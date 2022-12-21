@@ -6,7 +6,7 @@
         <img src="https://www.tocdoc.com/sites/default/files/default_images/default-medium.png">
       </figure>
       <span v-if="$store.state.User.user.id" class="username">@{{$store.state.User.user.username}}</span>
-      <span class="username">Sesión offline</span>
+      <span v-if="!$store.state.User.user.id" class="username">Sesión offline</span>
 
       <div class="actions">
         <span @click="logout" class="action logout">Salir</span>

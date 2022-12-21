@@ -47,6 +47,7 @@ export default {
           if(typeof socket !== 'undefined' && socket.isConnected())
           socket.disconnect();
           window.localStorage.removeItem("token");
+          store.dispatch("User/setData",{});
           router.push("/login");
         },
         async refreshToken(redirect){
