@@ -6,14 +6,21 @@
 </template>
 
 <script>
-import Vue from 'vue';
+  import Vue from 'vue';
   import VueToast from 'vue-toast-notification';
   import 'vue-toast-notification/dist/index.css';
+
   Vue.use(VueToast);
 
-  import store from './store/index.js';
+  const versionChanges = require('../../package.json').versionChanges;
+  const appVersion = require('../../package.json').version;
+
+  //const Store = require('electron-store');
+  
+
   import FullscreenMessage from './components/FullscreenMessage.vue';
-  import { ipcRenderer } from 'electron'
+  import { app, ipcRenderer } from 'electron'
+
 
   export default {
     name: 'videoflux2',
@@ -24,7 +31,14 @@ import Vue from 'vue';
         }
     },
     mounted(){
+    const updateMessageKey = "update-message-shown";
 
+    if(!localStorage.getItem(updateMessageKey) || localStorage.getItem(updateMessageKey) == "0")
+    {
+      alert(`Versión ${appVersion}\n${versionChanges}`)
+      localStorage.setItem(updateMessageKey,"1");
+    }
+      
     let self = this;
     self.$toast.open({
               message: `Verificando actualizaciones...`,
@@ -32,6 +46,7 @@ import Vue from 'vue';
           });
 
     ipcRenderer.on('update_available', () => {
+      localStorage.setItem(updateMessageKey,"0");
       ipcRenderer.removeAllListeners('update_available');
       self.updateMessage = "Actualización encontrada. Descargando...";
 

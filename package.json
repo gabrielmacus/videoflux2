@@ -3,6 +3,7 @@
   "version": "0.0.29",
   "author": "Gabriel Macus <gabrielmacus@gmail.com>",
   "description": "Software de renombrado para secuencia de imágenes",
+  "versionChanges":"Notas de la version:\n- Posibilidad de generar infracciones offline (sin necesidad de conectarse al servidor)\n- Corregido problema que impedía la generación de registros de capturas\n- Eliminado botón \"Ver F3\". Ahora se accede a la función utilizando CTRL + Flecha de dirección",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
@@ -86,6 +87,7 @@
     "vue-range-component": "^1.0.3",
     "vue-router": "^3.0.1",
     "vue-rx": "^6.2.0",
+    "vue-simple-alert": "^1.1.1",
     "vue-the-mask": "^0.11.1",
     "vue-toast-notification": "0.0.3",
     "vuejs-clipper": "^1.1.6",
