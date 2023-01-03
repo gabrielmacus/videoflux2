@@ -1,9 +1,9 @@
 {
   "name": "videoflux2",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "author": "Gabriel Macus <gabrielmacus@gmail.com>",
   "description": "Software de renombrado para secuencia de imágenes",
-  "versionChanges":"Notas de la version:\n- Posibilidad de generar infracciones offline (sin necesidad de conectarse al servidor)\n- Corregido problema que impedía la generación de registros de capturas\n- Eliminado botón \"Ver F3\". Ahora se accede a la función utilizando CTRL + Flecha de dirección",
+  "versionChanges":"Notas de la version:\n- Posibilidad de generar infracciones offline (sin necesidad de conectarse al servidor)\n- Corregido problema que impedía la generación de registros de capturas\n- Eliminado botón \"Ver F3\". Ahora se accede a la función utilizando CTRL + Flecha de dirección\n- Agregado soporte para arquitectura de 32 bits",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
